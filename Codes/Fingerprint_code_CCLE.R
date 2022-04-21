@@ -26,5 +26,5 @@ for (i in 1:number_drugs){
 
 prism_smiles <- data.frame("drug_name"=prism_smiles, "smiles"=prism_smiles,
                           "binary"=matrix_fp)
-write.csv(prism_smiles,file="info_smiles2binary_881bits_pubchem.csv")
+write.csv(prism_smiles,file="Data/info_smiles2binary_881bits_pubchem.csv")
 
