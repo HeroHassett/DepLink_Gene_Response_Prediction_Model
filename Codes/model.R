@@ -32,11 +32,11 @@ summary(model)
 # Compile the model using adam and measuring loss using mse
 model %>% compile(
   loss = 'mean_squared_error',
-  optimizer = 'adam'
+  optimizer = optimizer_adam(learning_rate=0.001)
 )
 
 # Fit the model
-history <- model %>% fit(X_train, Y_train, epochs=30, batch_size=128, validation_split=0.2)
+history <- model %>% fit(X_train, Y_train, epochs=20, batch_size=128, validation_split=0.2)
 
 # Plot the loss of the model
 plot(history)
