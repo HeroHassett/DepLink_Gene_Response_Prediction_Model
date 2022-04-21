@@ -1,0 +1,33 @@
+# Import packages
+library(rcdk)
+library(rJava)
+library(tidyr)
+library(readr)
+library("stringr")
+
+# Load PRISM & CCLE data
+load('Data/drug_PRISM_2019/primary-screen-replicate-collapsed-logfold-change_treatment-info_Tapsya.rdata')
+gene_exp <- readRDS('Data/gene_DepMap_21Q4/CCLE_exp_organized.RDS')
+
+
+# Switch prism_data column for the prism_info broad_id column
+colnames(prism_data) <- prism_info$broad_id
+
+# transpose CCLE/gene_exp matrix
+gene_exp <- t(gene_exp)
+
+# Make the rows of prism_data and gene_exp the same
+cell_ids <- intersect(rownames(prism_data), rownames(gene_exp))
+
+# Input intersected data values into their respective data frames
+prism_data_new <- prism_data[cell_ids, ]
+gene_exp_new <- gene_exp[cell_ids, ]
+
+# Remove NA values from prism_data_new
+prism_data_new <- drop_na(prism_data_new)
+
+# Remove the gene expressions that had null values for their drug response
+gene_exp_data <- merge(gene_exp_new, prism_data_new, by=0)
+rownames(gene_exp_data) <- gene_exp_data[,1]
+gene_exp_data <- gene_exp_data[,!(names(gene_exp_data) %in% "Row.names")]
+gene_exp_data <- gene_exp_data[0:17040]
