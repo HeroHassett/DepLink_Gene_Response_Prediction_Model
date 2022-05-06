@@ -6,8 +6,6 @@ import seaborn as sns
 
 from random import randint
 
-from import_data import load_data
-
 import matplotlib.pyplot as plt
 
 from sklearn import preprocessing
@@ -44,7 +42,7 @@ weight = K.variable(0.)
 latent_space_dim = 33
 
 # Directory location
-dir = 'VAE_TCGA/Model_saved/vae_RawData_NOAnnealing_Ksum_LatentDimension33/'
+dir = '/Users/alexk/Documents/GitHub/DepLink_Gene_Response_Prediction_Model/'
 
 if not os.path.exists(dir):
     os.mkdir(dir)
@@ -118,10 +116,10 @@ def plot_figure(df, tsne_results, tumor_name, filename=None):
 
 # Load Data, TCGA gene expression data (9059,15363) (tumor sample, gene name)
 # This data is tpm (transcripts per million)
-data_tcga_exp, _, _, _ = load_data("tcga_exp_data.txt")
+data_tcga_exp, _, _, _ = load_data("old/tcga_exp_data.txt")
 
 # Load Tumor labels
-tumor_name_samples = load_data("tcga_sample_tumor.csv")
+tumor_name_samples = load_data("old/tcga_exp_data.txt")
 tumor_name_samples = np.array(tumor_name_samples[3])
 
 # Normalize per feature
@@ -130,7 +128,7 @@ X_tcga = data_tcga_exp
 
 # Labeling
 label_encoder = LabelEncoder()
-tumor_name_samples = np.array(tumor_name_samples)
+tumor_name_samples = np.array(tumor_name_samples[:9059])
 label_encoder.fit(tumor_name_samples)
 # print(label_encoder.classes_)
 tumor_name_samples_code = label_encoder.transform(tumor_name_samples)
@@ -201,9 +199,9 @@ if 1 == 1:
     #                    callbacks=[(AnnealingCallback(weight))], shuffle=False)
 
     # save model
-    encoder_model.save([dir + 'a_encoder.h5'][0])
-    decoder_model.save([dir + 'a_decoder.h5'][0])
-    vae.save([dir + 'a_vae.h5'][0])
+    encoder_model.save([dir + 'Figures/a_encoder.h5'][0])
+    decoder_model.save([dir + 'Figures/a_decoder.h5'][0])
+    vae.save([dir + 'Model Data/a_vae.h5'][0])
 
     # Plot the training and validation loss
     plt.plot(history2.history['loss'])
@@ -212,7 +210,7 @@ if 1 == 1:
     plt.ylabel("Loss")
     plt.xlabel("Epoch")
     plt.legend(['Train', 'Val'])
-    plt.savefig([dir + 'Figure_ModelLoss_MSE.png'][0])
+    plt.savefig([dir + 'Figure/Figure_ModelLoss_MSE.png'][0])
     plt.show()
 
     # Plot RL and KL loss during training
@@ -220,22 +218,29 @@ if 1 == 1:
     plt.title('Training Reconstruction Loss')
     plt.ylabel("Loss")
     plt.xlabel("Epoch")
-    plt.savefig([dir + 'Figure_Training_RL.png'][0])
+    plt.savefig([dir + 'Figures/Figure_Training_RL.png'][0])
     plt.show()
 
     plt.plot(history2.history['vae_kl_loss'])
     plt.title('Training KL Loss')
     plt.ylabel("Loss")
     plt.xlabel("Epoch")
-    plt.savefig([dir + 'Figure_Training_KL.png'][0])
+    plt.savefig([dir + 'Figures/Figure_Training_KL.png'][0])
     plt.show()
 
 
 # To load an existing model
-if 1 == 0:
-    encoder_model.load_weights([dir + 'a_encoder.h5'][0])
-    decoder_model.load_weights([dir + 'a_decoder.h5'][0])
-    vae.load_weights([dir + 'a_vae.h5'][0])
+if 1 == 1:
+    tcga_geneExp_model = pickle.load(open("Data/gene_DepMap_21Q4/tcga_pretrained_autoencoder_geneExp.pickle", "rb"))
+    self.feature_extractorE_layer1 = Dense(1024, input_shape=(15363,), weights=tcga_geneExp_model[0])
+    self.feature_extractorE_layer2 = LeakyReLU(weights=tcga_geneExp_model[1])
+    self.feature_extractorE_layer3 = Dense(256, weights=tcga_geneExp_model[2])
+    self.feature_extractorE_layer4 = LeakyReLU(weights=tcga_geneExp_model[3])
+    self.feature_extractorE_layer5 = Dense(64, weights=tcga_geneExp_model[4])
+    self.feature_extractorE_layer6 = LeakyReLU(weights=tcga_geneExp_model[5])
+    #encoder_model.load_weights([dir + 'a_encoder.h5'][0])
+    #decoder_model.load_weights([dir + 'a_decoder.h5'][0])
+    #vae.load_weights([dir + 'a_vae.h5'][0])
 
 # Latent space visualization
 X_test_mu, X_test_std, X_test_sample = encoder_model.predict(X_test)
@@ -246,7 +251,7 @@ df["y"] = y_test
 df["comp-1"] = X_test_mu[:, 0]
 df["comp-2"] = X_test_mu[:, 1]
 plot_figure(df, X_test_mu, y_test,
-            filename=[dir + 'Figure_TestData_LatentSpaceVisualization.png'][0])
+            filename=[dir + 'Figures/Figure_TestData_LatentSpaceVisualization.png'][0])
 
 X_tcga_mu, X_tcga_std, X_tcga_dsample = encoder_model.predict(X_tcga)
 if latent_space_dim > 2:
@@ -256,7 +261,7 @@ df["y"] = tumor_name_samples
 df["comp-1"] = X_tcga_mu[:, 0]
 df["comp-2"] = X_tcga_mu[:, 1]
 plot_figure(df, X_tcga_mu, tumor_name_samples,
-            filename=[dir + 'Figure_TCGAData_LatentSpaceVisualization.png'][0])
+            filename=[dir + 'Figures/Figure_TCGAData_LatentSpaceVisualization.png'][0])
 
 # Decode the latent space representation of test dataset
 X_test_decoded = decoder_model.predict(X_test_sample)
@@ -271,7 +276,7 @@ df["comp-1"] = tsne_test_results[:, 0]
 df["comp-2"] = tsne_test_results[:, 1]
 # plt.figure(figsize=(10, 10))
 plot_figure(df, tsne_test_results, y_test,
-            filename=[dir + 'Figure_RawTestData_TSNEProjection.png'][0])
+            filename=[dir + 'Figures/Figure_RawTestData_TSNEProjection.png'][0])
 
 tsne = TSNE(n_components=2, verbose=1, perplexity=50, n_iter=1000)
 tsne_results_decoded = tsne.fit_transform(X_test_decoded)
@@ -280,6 +285,6 @@ df["y"] = y_test
 df["comp-1"] = tsne_results_decoded[:, 0]
 df["comp-2"] = tsne_results_decoded[:, 1]
 plot_figure(df, tsne_results_decoded, y_test,
-            filename=[dir + 'Figure_VAEDecoderTestData_TSNEProjection.png'][0])
+            filename=[dir + 'Figures/Figure_VAEDecoderTestData_TSNEProjection.png'][0])
 
 k = 1
