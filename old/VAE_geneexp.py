@@ -6,7 +6,10 @@ import seaborn as sns
 
 from random import randint
 
+from import_the_data import load_data
+
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
 from sklearn import preprocessing
 from sklearn.manifold import TSNE
@@ -15,23 +18,20 @@ from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics.cluster import adjusted_rand_score
 from sklearn.metrics import roc_auc_score, roc_curve, auc
-from sklearn.model_selection import KFold, StratifiedKFold, train_test_split
+from sklearn.model_selection import train_test_split
 
-import tensorflow as tf
-from tensorflow.keras import backend as K
-from tensorflow.keras.models import Model
-from tensorflow.keras.utils import plot_model
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.optimizers import Adam, SGD
-from tensorflow.keras.losses import mse, binary_crossentropy
-from tensorflow.keras.layers import Lambda, Input, Dense, Input, Flatten, Multiply, Reshape, concatenate
-from tensorflow.keras.layers import Dense, Activation, Dropout, Conv1D, MaxPooling1D, Conv2DTranspose, \
-    BatchNormalization, LeakyReLU, ReLU
-from tensorflow.keras.callbacks import Callback
+import keras
 
-from tensorflow.python.framework.ops import disable_eager_execution
+from keras import backend as K
+from keras.models import Model
+from keras.losses import mse, binary_crossentropy
+from keras.layers import Lambda, Dense, Input, Flatten, Multiply, Reshape, concatenate
+from keras.layers import Dense, BatchNormalization, LeakyReLU
+from keras.callbacks import Callback
 
-disable_eager_execution()
+#from tensorflow.python.framework.ops import disable_eager_execution
+
+#disable_eager_execution()
 
 n_epochs = 50
 klstart = 10
@@ -44,14 +44,14 @@ latent_space_dim = 33
 # Directory location
 dir = '/Users/alexk/Documents/GitHub/DepLink_Gene_Response_Prediction_Model/'
 
-if not os.path.exists(dir):
-    os.mkdir(dir)
+#if not os.path.exists(dir):
+#    os.mkdir(dir)
 
 # Sampling function as a layer
 def sampling(mu_log_variance):
     mu, log_variance = mu_log_variance
-    epsilon = tf.keras.backend.random_normal(shape=tf.keras.backend.shape(mu), mean=0.0, stddev=1.0)
-    random_sample = mu + tf.keras.backend.exp(log_variance / 2) * epsilon
+    epsilon = K.random_normal(shape=K.shape(mu), mean=0.0, stddev=1.0)
+    random_sample = mu + K.exp(log_variance / 2) * epsilon
     return random_sample
 
 
@@ -116,10 +116,10 @@ def plot_figure(df, tsne_results, tumor_name, filename=None):
 
 # Load Data, TCGA gene expression data (9059,15363) (tumor sample, gene name)
 # This data is tpm (transcripts per million)
-data_tcga_exp, _, _, _ = load_data("old/tcga_exp_data.txt")
+data_tcga_exp, _, _, _ = load_data(dir + "old/tcga_exp_data.txt")
 
 # Load Tumor labels
-tumor_name_samples = load_data("old/tcga_exp_data.txt")
+tumor_name_samples = load_data(dir + "old/tcga_exp_data.txt")
 tumor_name_samples = np.array(tumor_name_samples[3])
 
 # Normalize per feature
@@ -190,11 +190,13 @@ vae = Model(x, vae_decoder_output, name="VAE")
 # For training enable this
 if 1 == 1:
     # Training
-    opt = tf.keras.optimizers.Adam(lr=0.00005, beta_1=0.9, beta_2=0.999, epsilon=1e-8, decay=1e-3)
+    opt = keras.optimizers.Adam(lr=0.00005, beta_1=0.9, beta_2=0.999, epsilon=1e-8, decay=1e-3)
     # vae.compile(optimizer=opt, loss=vae_reconstruction_loss)
     # history1 = vae.fit(X_train, X_train, epochs=35, batch_size=64, shuffle=False)
     vae.compile(optimizer=opt, loss=loss(weight), metrics=[vae_reconstruction_loss, vae_kl_loss])
-    history2 = vae.fit(X_train, X_train, epochs=n_epochs, validation_data=(X_val, X_val), batch_size=64, shuffle=False)
+    callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
+    history2 = vae.fit(X_train, X_train, epochs=n_epochs, validation_data=(X_val, X_val), batch_size=64, shuffle=False,
+                       callbacks=[callback])
     # history2 = vae.fit(X_train, X_train, epochs=n_epochs, batch_size=64, validation_data=(X_val, X_val),
     #                    callbacks=[(AnnealingCallback(weight))], shuffle=False)
 
@@ -232,12 +234,12 @@ if 1 == 1:
 # To load an existing model
 if 1 == 1:
     tcga_geneExp_model = pickle.load(open("Data/gene_DepMap_21Q4/tcga_pretrained_autoencoder_geneExp.pickle", "rb"))
-    self.feature_extractorE_layer1 = Dense(1024, input_shape=(15363,), weights=tcga_geneExp_model[0])
-    self.feature_extractorE_layer2 = LeakyReLU(weights=tcga_geneExp_model[1])
-    self.feature_extractorE_layer3 = Dense(256, weights=tcga_geneExp_model[2])
-    self.feature_extractorE_layer4 = LeakyReLU(weights=tcga_geneExp_model[3])
-    self.feature_extractorE_layer5 = Dense(64, weights=tcga_geneExp_model[4])
-    self.feature_extractorE_layer6 = LeakyReLU(weights=tcga_geneExp_model[5])
+    feature_extractorE_layer1 = Dense(1024, input_shape=(15363,), weights=tcga_geneExp_model[0])
+    feature_extractorE_layer2 = LeakyReLU(weights=tcga_geneExp_model[1])
+    feature_extractorE_layer3 = Dense(256, weights=tcga_geneExp_model[2])
+    feature_extractorE_layer4 = LeakyReLU(weights=tcga_geneExp_model[3])
+    feature_extractorE_layer5 = Dense(64, weights=tcga_geneExp_model[4])
+    feature_extractorE_layer6 = LeakyReLU(weights=tcga_geneExp_model[5])
     #encoder_model.load_weights([dir + 'a_encoder.h5'][0])
     #decoder_model.load_weights([dir + 'a_decoder.h5'][0])
     #vae.load_weights([dir + 'a_vae.h5'][0])
