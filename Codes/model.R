@@ -14,7 +14,6 @@ x_train <- ccle_data
 tcga_geneExp_weights <- pd$read_pickle("Data/gene_DepMap_21Q4/tcga_pretrained_autoencoder_geneExp.pickle")
 tcga_geneExp_model <- load_model_hdf5("Data/gene_DepMap_21Q4/tcga_pretrained_autoencoder_geneExp_model.h5")
 
-
 # Make training data sets into matrices
 X_train <- data.matrix(X_train, rownames.force=NA)
 Y_train <- data.matrix(Y_train, rownames.force=NA)

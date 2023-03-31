@@ -13,6 +13,12 @@ ccle_data <- ccle_data[,!(names(ccle_data) %in% "...1")]
 ccle_data <- ccle_data[1:104]
 ccle_data <- t(ccle_data)
 
+ccle_mut_data <- read_delim('/Users/alexk/Documents/GitHub/DepLink_Gene_Response_Prediction_Model/Data/gene_DepMap_21Q4/ccle_mut_data.txt')
+ccle_mut_data <- ccle_mut_data[2:105]
+ccle_mut_data <- t(ccle_mut_data)
+write.csv(ccle_mut_data,file="Data/ccle_mut_data.csv")
+
+
 # Switch prism_data column for the prism_info broad_id column
 colnames(prism_data) <- prism_info$broad_id
 
