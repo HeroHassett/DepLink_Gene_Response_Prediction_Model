@@ -12,6 +12,6 @@ Encoding: UTF-8
 RnwWeave: Sweave
 LaTeX: pdfLaTeX
 
-PythonType: conda
-PythonVersion: 3.8.13
-PythonPath: renv/python/r-reticulate/bin/python3.8
+PythonType: system
+PythonVersion: 3.8.10
+PythonPath: /usr/local/bin/python3.8
