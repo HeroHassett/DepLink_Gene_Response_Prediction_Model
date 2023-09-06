@@ -14,3 +14,4 @@ Data/gene_DepMap_21Q4/tcga_pretrained_autoencoder_geneMutation.pickle filter=lfs
 /Users/alexk/Documents/GitHub/DepLink_Gene_Response_Prediction_Model/Paper_Models/featureExtractors/tcga_mut_data_1024_256_64_64_100.pickle filter=lfs diff=lfs merge=lfs -text
 Paper_Models/featureExtractors/tcga_mut_data_1024_256_64_64_100.pickle filter=lfs diff=lfs merge=lfs -text
 Paper_Models/featureExtractors/tcga_exp_data_1024_256_64_64_100.pickle filter=lfs diff=lfs merge=lfs -text
+/Users/alexk/Documents/GitHub/DepLink_Gene_Response_Prediction_Model/.RDataTmp filter=lfs diff=lfs merge=lfs -text
